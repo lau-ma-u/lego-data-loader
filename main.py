@@ -46,7 +46,9 @@ def get_mocs(code, parts, params):
     mocs_df.to_csv(f"{code}-MOCs.csv")
 
 def get_lego_info():
-    """Writes a csv file listing the information of all the Lego sets given in 'my_lego_sets.csv."""
+    """Writes a csv file listing the information of all the Lego sets given in 'my_lego_sets.csv.
+    Also creates separate files for every set containing a list of the MOCs for that set.
+    """
 
     # Read a file containing Lego set numbers and convert the content to a list.
     my_own_legos = pd.read_csv("my_lego_sets.csv")
