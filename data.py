@@ -58,70 +58,74 @@ def get_lego_info():
     """
 
     # Read a file containing Lego set numbers and convert the content to a list.
-    my_own_legos = pd.read_csv("my_lego_sets.csv")
-    own_legos_list = my_own_legos["Set number"].to_list()
+    try:
+        my_own_legos = pd.read_csv("my_lego_sets.csv")
+    except:
+        print("No file found")
+    else:
+        own_legos_list = my_own_legos["Set number"].to_list()
 
-    # Parameters for the Rebrick API call.
-    params_rb = {
-        "key": keys.APIKEY_REBRICK
-    }
-
-    # Lists for storing the data received via the Rebrick and Brickset API calls.
-    set_numbers = []
-    names = []
-    parts = []
-    instructions = []
-    num_mocs_list = []
-    avg_moc_parts_list = []
-
-    # For every set number get all necessary info using Rebrick and Brickset APIs.
-    for code in own_legos_list:
-        rebrick_code = str(code) + "-1"
-
-        response_rb = requests.get(f"{URL_REBRICK}/api/v3/lego/sets/{rebrick_code}", params=params_rb)
-
-        data_rb = response_rb.json()
-
-        # Check that JSON file contains expected data. If not, continue to the next set number.
-        try:
-            data_point = data_rb["num_parts"]
-        except (KeyError, IndexError, TypeError):
-            continue
-
-        # Get all MOCs of the set and write them in a csv file.
-        num_mocs, avg_moc_parts = get_mocs(rebrick_code, data_rb["num_parts"], params_rb)
-
-        # Parameters for Brickset API call.
-        params_bs = {
-            "apiKey": keys.APIKEY_BRICKSET,
-            "setNumber": code
+        # Parameters for the Rebrick API call.
+        params_rb = {
+            "key": keys.APIKEY_REBRICK
         }
 
-        response_bs = requests.get(f"{URL_BRICKSET}/getInstructions2", params=params_bs)
-        data_bs = response_bs.json()
+        # Lists for storing the data received via the Rebrick and Brickset API calls.
+        set_numbers = []
+        names = []
+        parts = []
+        instructions = []
+        num_mocs_list = []
+        avg_moc_parts_list = []
 
-        # Store the data in lists
-        set_numbers.append(str(code))
-        names.append(data_rb["name"])
-        parts.append(data_rb["num_parts"])
-        num_mocs_list.append(num_mocs)
-        avg_moc_parts_list.append(avg_moc_parts)
-        instructions.append(data_bs["instructions"][0]["URL"])
+        # For every set number get all necessary info using Rebrick and Brickset APIs.
+        for code in own_legos_list:
+            rebrick_code = str(code) + "-1"
 
-    # Dictionary for storing the lists created in the for-loop before. Used to create a pandas Dataframe.
-    lego_dict = {
-        "set_num": set_numbers,
-        "name": names,
-        "num_parts": parts,
-        "num_mocs": num_mocs_list,
-        "avg_moc_parts": avg_moc_parts_list,
-        "instruction_url": instructions
-    }
+            response_rb = requests.get(f"{URL_REBRICK}/api/v3/lego/sets/{rebrick_code}", params=params_rb)
 
-    # Create a Pandas Dataframe from the dictionary, sort it by set number and write to a csv file
-    legos_df = pd.DataFrame(lego_dict)
-    legos_df = legos_df.sort_values("set_num")
-    legos_df.to_csv("lego_info.csv")
+            data_rb = response_rb.json()
 
-    return legos_df
+            # Check that JSON file contains expected data. If not, continue to the next set number.
+            try:
+                data_point = data_rb["num_parts"]
+            except (KeyError, IndexError, TypeError):
+                continue
+
+            # Get all MOCs of the set and write them in a csv file.
+            num_mocs, avg_moc_parts = get_mocs(rebrick_code, data_rb["num_parts"], params_rb)
+
+            # Parameters for Brickset API call.
+            params_bs = {
+                "apiKey": keys.APIKEY_BRICKSET,
+                "setNumber": code
+            }
+
+            response_bs = requests.get(f"{URL_BRICKSET}/getInstructions2", params=params_bs)
+            data_bs = response_bs.json()
+
+            # Store the data in lists
+            set_numbers.append(str(code))
+            names.append(data_rb["name"])
+            parts.append(data_rb["num_parts"])
+            num_mocs_list.append(num_mocs)
+            avg_moc_parts_list.append(avg_moc_parts)
+            instructions.append(data_bs["instructions"][0]["URL"])
+
+        # Dictionary for storing the lists created in the for-loop before. Used to create a pandas Dataframe.
+        lego_dict = {
+            "set_num": set_numbers,
+            "name": names,
+            "num_parts": parts,
+            "num_mocs": num_mocs_list,
+            "avg_moc_parts": avg_moc_parts_list,
+            "instruction_url": instructions
+        }
+
+        # Create a Pandas Dataframe from the dictionary, sort it by set number and write to a csv file
+        legos_df = pd.DataFrame(lego_dict)
+        legos_df = legos_df.sort_values("set_num")
+        legos_df.to_csv("lego_info.csv")
+
+        return legos_df
 
