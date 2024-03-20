@@ -7,6 +7,7 @@ def create_plots(legos_df):
 
     plt.style.use("seaborn-v0_8")
 
+    # Create the figure and axes
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2,
                                                  ncols=2,
                                                  figsize=(20, 20))
@@ -39,9 +40,12 @@ def create_plots(legos_df):
     ax2.axhline(legos_df["num_mocs"].mean(),
                 linestyle='--', color="red")
 
+    # Sort the dataframe for the next plot
+    sorted_df = legos_df.sort_values("avg_moc_parts", ascending=False)
+
     # Plot the data
-    ax3.bar(legos_df["set_num"],
-            legos_df["avg_moc_parts"])
+    ax3.bar(sorted_df["set_num"],
+            sorted_df["avg_moc_parts"])
 
     # Customize the plot
     ax3.set(title="Average Number of parts in a MOC per Set",
