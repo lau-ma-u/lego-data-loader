@@ -1,3 +1,5 @@
+# Lego Project
+
 An app for batch loading information about Lego sets and the MOCs ("My Own Creation") of those sets. 
 Uses Rebrickable and Brickset APIs.
 Takes a .csv file containing Lego set numbers as input.
@@ -11,6 +13,8 @@ You will need API keys to the following:
 Input: my_lego_sets.csv
 
 Output: lego_info.csv, lego_plots.png and for every set {SET_NUMBER}-MOCs.csv
+
+![lego_plots.png](lego_plots.png)
 
 
 Development ideas:
