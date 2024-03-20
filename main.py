@@ -7,7 +7,7 @@ def main():
     df = data.get_lego_info()
 
     # Create plots from gathered data and save them as 'lego_plots.png'.
-    if df:
+    if not df.empty:
         plots.create_plots(df)
 
 if __name__ == "__main__":
