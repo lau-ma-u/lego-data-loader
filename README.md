@@ -9,7 +9,9 @@ You will need API keys to the following:
 * Brickset
 
 Input: my_lego_sets.csv
+
 Output: lego_info.csv, lego_plots.png and for every set {SET_NUMBER}-MOCs.csv
+
 
 Development ideas:
 * Enable controlling the program with user input.
