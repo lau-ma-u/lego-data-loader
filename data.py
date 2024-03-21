@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import numpy as np
 import keys
 
 
@@ -17,36 +18,31 @@ def get_mocs(code, parts, params):
     response = requests.get(f"{URL_REBRICK}/api/v3/lego/sets/{code}/alternates", params=params)
     data = response.json()
 
-    moc_set_nums = []
-    moc_names = []
-    moc_num_parts = []
-    moc_urls = []
+    moc_list= []
 
     for n in range(len(data["results"])):
-        moc_set_nums.append(data['results'][n]['set_num'])
-        moc_names.append(data['results'][n]['name'])
-        moc_num_parts.append(data['results'][n]['num_parts'])
-        moc_urls.append(data['results'][n]['moc_url'])
+        moc_dict = {
+            "set_num": data['results'][n]['set_num'],
+            "name": data['results'][n]['name'],
+            "num_parts": data['results'][n]['num_parts'],
+            "moc_url": data['results'][n]['moc_url']
+        }
+        moc_list.append(moc_dict)
 
-    # Dictionary containing all MOCs of one Lego set.
-    moc_dict = {
-        "set_num": moc_set_nums,
-        "name": moc_names,
-        "num_parts": moc_num_parts,
-        "instruction_url": moc_urls
-    }
+    mocs_df = pd.DataFrame(moc_list)
+    print(mocs_df)
 
-    mocs_df = pd.DataFrame(moc_dict)
-
+    # Remove "-1" from the end of the set number
+    code = code.split("-")[0]
     # Sort dataframe based on the number of parts in a MOC
     mocs_df = mocs_df.sort_values("num_parts", ascending=False)
+    mocs_df['name'] = mocs_df['name'].str.replace(code, '', regex=True)
 
     # Count the percentage of pieces used in relation to the original set. Remove MOC's using extra pieces.
     mocs_df["pieces_used_percentage"] = round((mocs_df["num_parts"] / parts) * 100, 1)
     mocs_df = mocs_df.query("pieces_used_percentage < 100")
 
-    # Remove "-1" from the end of the set number before creating csv-file.
-    code = code.split("-")[0]
+    # Create .csv file
     mocs_df.to_csv(f"{code}-MOCs.csv")
 
     return (len(mocs_df), (mocs_df["num_parts"].mean()))
