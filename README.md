@@ -1,4 +1,4 @@
-# Lego Project
+# Lego Data Loader
 
 An app for batch loading information about Lego sets and the MOCs ("My Own Creation") of those sets. 
 
