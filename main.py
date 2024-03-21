@@ -1,11 +1,9 @@
 
 import requests
 import pandas as pd
+import keys
 
-APIKEY_REBRICK = "3337cebab7512a581f12cccf7fafb08c"
 URL_REBRICK = "https://rebrickable.com"
-
-APIKEY_BRICKSET = "3-z8CQ-fpEO-nvPx2"
 URL_BRICKSET = "https://brickset.com/api/v3.asmx"
 
 def get_mocs(code, parts, params):
@@ -38,13 +36,12 @@ def get_mocs(code, parts, params):
     code = code.split("-")[0]
     mocs_df.to_csv(f"{code}-MOCs.csv")
 
-
 my_own_legos = pd.read_csv("my_lego_sets.csv")
 
 own_legos_list = my_own_legos["Set number"].to_list()
 
 params_rb = {
-    "key": APIKEY_REBRICK
+    "key": keys.APIKEY_REBRICK
 }
 
 set_numbers = []
@@ -60,7 +57,7 @@ for code in own_legos_list:
     get_mocs(rebrick_code, data_rb["num_parts"], params_rb)
 
     params_bs = {
-        "apiKey": APIKEY_BRICKSET,
+        "apiKey": keys.APIKEY_BRICKSET,
         "setNumber": code
     }
 
