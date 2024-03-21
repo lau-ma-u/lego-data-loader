@@ -26,3 +26,4 @@ Output: lego_info.csv, lego_plots.png and for every set {SET_NUMBER}-MOCs.csv
 
 ## Development Plans
 * Enable controlling the program with user input.
+* Improve the cleaning of the MOC data

@@ -1,6 +1,5 @@
 import requests
 import pandas as pd
-import numpy as np
 import keys
 
 
@@ -18,6 +17,10 @@ def get_mocs(code, parts, params):
     response = requests.get(f"{URL_REBRICK}/api/v3/lego/sets/{code}/alternates", params=params)
     data = response.json()
 
+    # Check that JSON file contains data. If not, return from function.
+    if data["count"] == 0:
+        return (0, 0)
+
     moc_list= []
 
     for n in range(len(data["results"])):
@@ -30,13 +33,13 @@ def get_mocs(code, parts, params):
         moc_list.append(moc_dict)
 
     mocs_df = pd.DataFrame(moc_list)
-    print(mocs_df)
 
     # Remove "-1" from the end of the set number
     code = code.split("-")[0]
     # Sort dataframe based on the number of parts in a MOC
     mocs_df = mocs_df.sort_values("num_parts", ascending=False)
-    mocs_df['name'] = mocs_df['name'].str.replace(code, '', regex=True)
+
+    # mocs_df['name'] = mocs_df['name'].str.replace(code, '', regex=True)
 
     # Count the percentage of pieces used in relation to the original set. Remove MOC's using extra pieces.
     mocs_df["pieces_used_percentage"] = round((mocs_df["num_parts"] / parts) * 100, 1)
@@ -66,13 +69,8 @@ def get_lego_info():
             "key": keys.APIKEY_REBRICK
         }
 
-        # Lists for storing the data received via the Rebrick and Brickset API calls.
-        set_numbers = []
-        names = []
-        parts = []
-        instructions = []
-        num_mocs_list = []
-        avg_moc_parts_list = []
+        # Create a list for the creation of a pandas DataFrame
+        lego_list = []
 
         # For every set number get all necessary info using Rebrick and Brickset APIs.
         for code in own_legos_list:
@@ -82,7 +80,7 @@ def get_lego_info():
 
             data_rb = response_rb.json()
 
-            # Check that JSON file contains expected data. If not, continue to the next set number.
+            # Check that JSON file contains data. If not, continue to the next set number.
             try:
                 data_point = data_rb["num_parts"]
             except (KeyError, IndexError, TypeError):
@@ -100,26 +98,24 @@ def get_lego_info():
             response_bs = requests.get(f"{URL_BRICKSET}/getInstructions2", params=params_bs)
             data_bs = response_bs.json()
 
-            # Store the data in lists
-            set_numbers.append(str(code))
-            names.append(data_rb["name"])
-            parts.append(data_rb["num_parts"])
-            num_mocs_list.append(num_mocs)
-            avg_moc_parts_list.append(avg_moc_parts)
-            instructions.append(data_bs["instructions"][0]["URL"])
+            # A dictionary for storing the data of one Lego set
+            lego_dict = {}
 
-        # Dictionary for storing the lists created in the for-loop before. Used to create a pandas Dataframe.
-        lego_dict = {
-            "set_num": set_numbers,
-            "name": names,
-            "num_parts": parts,
-            "num_mocs": num_mocs_list,
-            "avg_moc_parts": avg_moc_parts_list,
-            "instruction_url": instructions
-        }
+            # Add data to dictionary
+            lego_dict = {
+                "set_num": str(code),
+                "name": data_rb["name"],
+                "num_parts": data_rb["num_parts"],
+                "num_mocs": num_mocs,
+                "avg_moc_parts": avg_moc_parts,
+                "instruction_url": data_bs["instructions"][0]["URL"]
+            }
 
-        # Create a Pandas Dataframe from the dictionary, sort it by set number and write to a csv file
-        legos_df = pd.DataFrame(lego_dict)
+            # Add dictionary to list of Lego set data
+            lego_list.append(lego_dict)
+
+        # Create a Pandas Dataframe from the list, sort it by set number and write to a csv file
+        legos_df = pd.DataFrame(lego_list)
         legos_df = legos_df.sort_values("set_num")
         legos_df.to_csv("lego_info.csv")
 
